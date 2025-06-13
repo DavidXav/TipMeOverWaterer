@@ -4,6 +4,8 @@
 #include <esp_sleep.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include "wifi_config.h" // Include WiFi credentials from a separate file
+
 
 #define SIX_HOURS_MS   (6ULL*60*60) // 6 hours in milliseconds
 #define SIX_HOURS_TICKS       (SIX_HOURS_MS*configTICK_RATE_HZ)
@@ -21,9 +23,7 @@ const int LCDSCL = 22; // SCL pin for I2C
 const int LCDButton = 25; // Button pin for the LCD
 const int SoilMoisturePin = 35; // Pin for soil moisture sensor
 
-//wifi credentials
-const char* ssid = "BELL599"; // Replace with your WiFi SSID
-const char* password = ""; // Replace with your WiFi password
+
 
 //telegram Credentials
 const char* botToken = "8039461251:AAGBOKUoEoFB0y7QCb6TrMubOUcoRq64dnI";
@@ -156,7 +156,7 @@ void moistureCheckTask(void *pvParameters) {
     Serial.println(moistureValue);
     
     // Check if the soil is dry
-    if (moistureValue > DRY - 700) {
+    if (moistureValue > DRY - 400) {
       xTaskNotifyGive(wateringTaskHandle); // Notify the watering task
       vTaskDelay(pdMS_TO_TICKS(10000)); // Wait for 10 seconds to allow the watering task to run
       if(abs(analogRead(SoilMoisturePin) - moistureValue) < 40){
@@ -165,6 +165,9 @@ void moistureCheckTask(void *pvParameters) {
       else {
         sendTelegramMessage("Plant was watered Successfully.");
       }
+    }
+    else{
+      sendTelegramMessage("Soil moisture is at an acceptabl level: " + String(moistureValue));
     } 
     Serial.println("Delaying for:");
     Serial.println(xDelay);
