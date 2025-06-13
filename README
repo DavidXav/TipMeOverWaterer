@@ -1,0 +1,86 @@
+# 🌱 TipMeOverWaterer
+
+**TipMeOverWaterer** is an ESP32-based automated plant watering system that periodically checks soil moisture levels and waters the plant as needed. It features an LCD interface, motor-controlled pump, and Telegram integration for remote status alerts.
+
+---
+
+## 📦 Features
+
+- 🌿 Automatically waters the plant every 6 hours (or sooner if needed)
+- 💧 Reads real-time soil moisture data via an analog sensor
+- 📲 Sends Telegram alerts when watering is triggered or the water tank is empty
+- 📟 Button-activated LCD displays current soil moisture level
+- ⚙️ Uses FreeRTOS tasks for modular and responsive operation
+- 🔋 Designed with power efficiency and sleep modes in mind (expandable)
+
+---
+
+## 🛠️ Hardware Requirements
+
+- ESP32 Dev Board  
+- Soil Moisture Sensor (Analog)  
+- Motor or Pump (controlled via GPIOs)  
+- Relay or Motor Driver (e.g., L298N)  
+- I2C LCD (16x2)  
+- Push Button  
+- Internet access via WiFi
+
+---
+
+## 🔌 Pin Configuration
+
+| Component            | ESP32 Pin |
+|---------------------|-----------|
+| Soil Moisture Sensor| GPIO35    |
+| LCD SDA             | GPIO21    |
+| LCD SCL             | GPIO22    |
+| LCD Button          | GPIO25    |
+| Motor IN1 (MOTOR1A) | GPIO27    |
+| Motor IN2 (MOTOR2A) | GPIO26    |
+
+---
+
+## 📡 Telegram Setup
+
+1. Create a Telegram bot via [@BotFather](https://t.me/BotFather)
+2. Note down your bot token
+3. Find your chat ID using @userinfobot or [this method](https://api.telegram.org/bot<YourBOTToken>/getUpdates) after sending a message
+4. Replace the `botToken` and `chatID` in the code with your values
+
+---
+
+## 📋 How It Works
+
+### 🕒 Every 6 Hours:
+- Reads soil moisture value
+- If dry:
+  - Activates water pump for 4 seconds
+  - Checks if soil moisture increased
+  - Sends alert via Telegram:
+    - ✅ Success: “Plant was watered successfully.”
+    - ❌ Failure: “Water tank appears to be empty…”
+
+### 🔘 On Button Press:
+- Wakes up LCD
+- Displays current moisture level for 5 seconds
+- Turns off backlight to conserve power
+
+---
+
+## ⚙️ Software Architecture
+
+Utilizes FreeRTOS tasks for concurrency:
+- `LCDTask` — Handles button-press triggered LCD updates
+- `wateringTask` — Activates the motor pump
+- `moistureCheckTask` — Monitors moisture and sends notifications
+- WiFi + HTTPClient used for Telegram messaging
+
+---
+
+## 🚀 Getting Started
+
+1. Flash the code to your ESP32 using Arduino IDE or PlatformIO
+2. Adjust your WiFi credentials:
+   ```cpp
+   const char* ssid = "YOUR_SSID";
+   const char* password = "YOUR_PASSWORD";
